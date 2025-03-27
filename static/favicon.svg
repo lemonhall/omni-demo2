@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景圆形 -->
+    <circle cx="16" cy="16" r="16" fill="#4A90E2"/>
+    
+    <!-- 音频波形 -->
+    <path d="M8 16v-2h2v4h-2v-2zm4-4v-2h2v8h-2v-6zm4 2v-4h2v8h-2v-4zm4-2v-2h2v8h-2v-6zm4 2v-4h2v8h-2v-4z" fill="white"/>
+</svg> 

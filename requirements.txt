@@ -1,0 +1,9 @@
+numpy>=2.2.4
+openai>=1.68.2
+pyaudio>=0.2.14
+soundfile>=0.13.1
+fastapi>=0.110.0
+uvicorn>=0.27.1
+agno>=1.2.4
+python-multipart>=0.0.9
+requests>=2.31.0 
