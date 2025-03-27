@@ -5,248 +5,461 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>语音交互演示</title>
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: var(--dark);
+            background-color: #f5f7ff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .app-container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
         }
 
-        h1 {
-            color: #2c3e50;
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem 2rem;
             text-align: center;
-            margin-bottom: 30px;
         }
 
-        .container {
-            background-color: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .app-header h1 {
+            font-weight: 600;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
         }
 
-        .control-panel {
+        .app-header p {
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .app-content {
+            padding: 2rem;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
             display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
+            align-items: center;
         }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
+        .section-title svg {
+            margin-right: 0.5rem;
         }
 
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
+        .form-group {
+            margin-bottom: 1.5rem;
         }
 
-        .record-btn {
-            background-color: #e74c3c;
-            color: white;
-            flex: 1;
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
         }
 
-        .record-btn:hover {
-            background-color: #c0392b;
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: var(--transition);
         }
 
-        .record-btn.active {
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { background-color: #e74c3c; }
-            50% { background-color: #c0392b; }
-            100% { background-color: #e74c3c; }
-        }
-
-        .auto-record-btn {
-            background-color: #27ae60;
-            color: white;
-            flex: 1;
-        }
-
-        .auto-record-btn:hover {
-            background-color: #219653;
-        }
-
-        .process-btn {
-            background-color: #3498db;
-            color: white;
-            flex: 1;
-        }
-
-        .process-btn:hover {
-            background-color: #2980b9;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input[type="text"], input[type="number"] {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
         .checkbox-group {
             display: flex;
             align-items: center;
-            gap: 5px;
+            margin-bottom: 1rem;
         }
 
-        .response-panel {
-            margin-top: 30px;
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
+        .checkbox-group input {
+            margin-right: 0.5rem;
+            width: 1.2rem;
+            height: 1.2rem;
+            accent-color: var(--primary);
         }
 
-        .status {
-            text-align: center;
-            margin-bottom: 15px;
-            font-weight: bold;
-            color: #7f8c8d;
-        }
-
-        .response-text {
-            background-color: #f9f9f9;
-            border-left: 4px solid #3498db;
-            padding: 15px;
-            border-radius: 0 5px 5px 0;
-            margin-bottom: 20px;
-            min-height: 50px;
-        }
-
-        .audio-controls {
-            display: flex;
+        .btn {
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
-            margin-top: 20px;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background-color: #e5177e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background-color: #3ab5d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+            background-color: var(--light);
+            font-weight: 500;
+        }
+
+        .status-success {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success);
+        }
+
+        .status-error {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger);
+        }
+
+        .status-processing {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background-color: rgba(67, 97, 238, 0.1);
+            border-radius: var(--border-radius);
+        }
+
+        .response-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .response-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .response-content {
+            min-height: 100px;
+            padding: 1rem;
+            background-color: var(--light);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .audio-player {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .audio-player::-webkit-media-controls-panel {
+            background-color: var(--light);
+            border-radius: var(--border-radius);
+        }
+
+        .browser-warning {
+            padding: 1rem;
+            background-color: rgba(248, 150, 30, 0.1);
+            border-left: 4px solid var(--warning);
+            margin-bottom: 1.5rem;
+            border-radius: var(--border-radius);
+            color: var(--dark);
+        }
+
+        .browser-warning strong {
+            color: var(--warning);
+        }
+
+        .notice {
+            padding: 1.5rem;
+            background-color: var(--light);
+            border-radius: var(--border-radius);
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .notice-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .notice-list {
+            padding-left: 1.2rem;
+        }
+
+        .notice-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* 动画效果 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 1.5s infinite;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        .hidden {
-            display: none;
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
         }
 
-        .error {
-            color: #e74c3c;
-            font-weight: bold;
+        /* 录音按钮状态 */
+        .recording {
+            position: relative;
+            overflow: hidden;
         }
-        
-        .timer {
-            font-size: 1.2em;
-            font-weight: bold;
-            text-align: center;
-            margin: 10px 0;
-            color: #7f8c8d;
+
+        .recording::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            animation: recordingPulse 1.5s infinite;
         }
-        
-        .notice {
-            margin-top: 30px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-left: 4px solid #3498db;
-            font-size: 0.9em;
-            color: #666;
+
+        @keyframes recordingPulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
-        
-        .browser-support-warning {
-            padding: 15px;
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            margin-bottom: 20px;
-            display: none;
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .app-content {
+                padding: 1.5rem;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>语音交互演示</h1>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>语音交互演示</h1>
+            <p>轻松录制、处理并获取语音回复</p>
+        </header>
         
-        <div class="browser-support-warning" id="browser-warning">
-            <strong>警告：</strong> 您的浏览器不支持录音功能。请使用现代浏览器（如Chrome、Firefox、Edge）访问此页面。
-        </div>
-        
-        <div class="control-panel">
-            <div class="input-group">
-                <label for="prompt-input">提示文本：</label>
-                <input type="text" id="prompt-input" value="这段音频在说什么">
+        <main class="app-content">
+            <div class="browser-warning" id="browser-warning" style="display: none;">
+                <strong>警告：</strong> 您的浏览器不支持录音功能。请使用Chrome、Firefox或Edge等现代浏览器访问此页面。
             </div>
             
-            <div class="input-group">
-                <label for="duration-input">录音时长（秒）：</label>
-                <input type="number" id="duration-input" min="1" max="30" value="5" step="1">
+            <section class="section">
+                <h2 class="section-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                    录音设置
+                </h2>
+                
+                <div class="form-group">
+                    <label for="prompt-input" class="form-label">提示文本</label>
+                    <input type="text" id="prompt-input" class="form-control" value="这段音频在说什么" placeholder="请输入提示文本">
+                </div>
+                
+                <div class="form-group">
+                    <label for="duration-input" class="form-label">录音时长（秒）</label>
+                    <input type="number" id="duration-input" class="form-control" min="1" max="30" value="5" step="1">
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="return-audio" checked>
+                    <label for="return-audio">返回音频回复</label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="auto-play" checked>
+                    <label for="auto-play">自动播放回复</label>
+                </div>
+                
+                <div class="timer" id="recording-timer" style="display: none;">00:00</div>
+                
+                <div class="status-indicator" id="status">准备就绪</div>
+                
+                <div class="btn-group">
+                    <button id="record-btn" class="btn btn-danger btn-lg btn-block">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        开始录音
+                    </button>
+                    <button id="auto-record-btn" class="btn btn-success btn-lg btn-block">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                            <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                        </svg>
+                        一键录音并处理
+                    </button>
+                </div>
+                
+                <button id="process-btn" class="btn btn-primary btn-lg btn-block" style="margin-top: 1rem;" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    处理录音
+                </button>
+            </section>
+            
+            <section class="section">
+                <div class="response-card" id="response-section" style="display: none;">
+                    <h3 class="response-title">处理结果</h3>
+                    <div class="response-content" id="response-text"></div>
+                    <div class="audio-controls" id="audio-controls" style="display: none;">
+                        <audio id="response-audio" class="audio-player" controls></audio>
+                    </div>
+                </div>
+            </section>
+            
+            <div class="notice">
+                <h4 class="notice-title">使用说明</h4>
+                <ul class="notice-list">
+                    <li>点击"开始录音"按钮开始手动录音，再次点击停止</li>
+                    <li>点击"一键录音并处理"按钮将自动录制指定时长并处理</li>
+                    <li>确保您的浏览器已授予麦克风访问权限</li>
+                    <li>录音会根据设定的时长自动停止，默认为5秒</li>
+                    <li>处理完成后，文本回复将显示在上方，音频回复可点击播放</li>
+                </ul>
             </div>
-            
-            <div class="checkbox-group">
-                <input type="checkbox" id="return-audio" checked>
-                <label for="return-audio">返回音频回复</label>
-            </div>
-            
-            <div class="checkbox-group">
-                <input type="checkbox" id="auto-play" checked>
-                <label for="auto-play">自动播放回复</label>
-            </div>
-            
-            <div class="timer hidden" id="recording-timer">00:00</div>
-            
-            <div class="button-group">
-                <button id="record-btn" class="record-btn">开始录音</button>
-                <button id="auto-record-btn" class="auto-record-btn">一键录音并处理</button>
-                <button id="process-btn" class="process-btn" disabled>处理录音</button>
-            </div>
-        </div>
-        
-        <div class="response-panel">
-            <div class="status" id="status">准备就绪</div>
-            
-            <div class="response-text" id="response-text"></div>
-            
-            <div class="audio-controls hidden" id="audio-controls">
-                <audio id="response-audio" controls></audio>
-            </div>
-        </div>
-        
-        <div class="notice">
-            <p><strong>使用说明：</strong></p>
-            <ul>
-                <li>点击"开始录音"按钮开始手动录音，再次点击停止</li>
-                <li>点击"一键录音并处理"按钮将自动录制指定时长并处理</li>
-                <li>确保您的浏览器已授予麦克风访问权限</li>
-                <li>录音会根据设定的时长自动停止，默认为5秒</li>
-            </ul>
-        </div>
+        </main>
     </div>
 
     <script src="js/audio-client.js"></script>
@@ -258,16 +471,9 @@
                 document.getElementById('record-btn').disabled = true;
                 document.getElementById('auto-record-btn').disabled = true;
                 document.getElementById('status').textContent = '您的浏览器不支持录音功能';
-                document.getElementById('status').classList.add('error');
+                document.getElementById('status').className = 'status-indicator status-error';
                 return;
             }
-            
-            // 初始化AudioClient
-            const audioClient = new AudioClient({
-                apiUrl: 'http://localhost:8000',
-                debug: true,
-                defaultRecordingDuration: 5000 // 默认5秒
-            });
             
             // 获取DOM元素
             const recordBtn = document.getElementById('record-btn');
@@ -278,10 +484,17 @@
             const returnAudioCheckbox = document.getElementById('return-audio');
             const autoPlayCheckbox = document.getElementById('auto-play');
             const statusEl = document.getElementById('status');
+            const responseSectionEl = document.getElementById('response-section');
             const responseTextEl = document.getElementById('response-text');
             const audioControlsEl = document.getElementById('audio-controls');
             const responseAudioEl = document.getElementById('response-audio');
             const recordingTimerEl = document.getElementById('recording-timer');
+            
+            // 初始化音频客户端
+            const audioClient = new AudioClient({
+                apiUrl: window.location.origin,
+                debug: true
+            });
             
             // 录音状态
             let isRecording = false;
@@ -290,12 +503,23 @@
             let startTime = 0;
             
             // 更新状态显示
-            function updateStatus(message, isError = false) {
+            function updateStatus(message, type = 'default') {
                 statusEl.textContent = message;
-                if (isError) {
-                    statusEl.classList.add('error');
-                } else {
-                    statusEl.classList.remove('error');
+                statusEl.className = 'status-indicator';
+                
+                switch(type) {
+                    case 'error':
+                        statusEl.classList.add('status-error');
+                        break;
+                    case 'success':
+                        statusEl.classList.add('status-success');
+                        break;
+                    case 'processing':
+                        statusEl.classList.add('status-processing');
+                        break;
+                    default:
+                        // 默认样式
+                        break;
                 }
             }
             
@@ -308,7 +532,7 @@
             
             // 开始计时器
             function startTimer() {
-                recordingTimerEl.classList.remove('hidden');
+                recordingTimerEl.style.display = 'block';
                 startTime = Date.now();
                 
                 // 清除可能存在的旧计时器
@@ -327,7 +551,7 @@
                     clearInterval(timerInterval);
                     timerInterval = null;
                 }
-                recordingTimerEl.classList.add('hidden');
+                recordingTimerEl.style.display = 'none';
             }
             
             // 录音按钮点击事件
@@ -341,16 +565,22 @@
                     audioClient.startRecording(durationMs)
                         .then(() => {
                             isRecording = true;
-                            recordBtn.classList.add('active');
-                            recordBtn.textContent = '停止录音';
+                            recordBtn.classList.add('recording');
+                            recordBtn.innerHTML = `
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                                    <rect x="6" y="4" width="4" height="16"></rect>
+                                    <rect x="14" y="4" width="4" height="16"></rect>
+                                </svg>
+                                停止录音
+                            `;
                             processBtn.disabled = true;
                             autoRecordBtn.disabled = true;
-                            updateStatus('正在录音...');
+                            updateStatus('正在录音...', 'processing');
                             startTimer();
                         })
                         .catch(error => {
                             console.error('录音失败:', error);
-                            updateStatus('无法访问麦克风，请检查权限', true);
+                            updateStatus('无法访问麦克风，请检查权限', 'error');
                         });
                 } else {
                     // 停止录音
@@ -358,11 +588,16 @@
                         .then(blob => {
                             isRecording = false;
                             recordedBlob = blob;
-                            recordBtn.classList.remove('active');
-                            recordBtn.textContent = '开始录音';
+                            recordBtn.classList.remove('recording');
+                            recordBtn.innerHTML = `
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                开始录音
+                            `;
                             processBtn.disabled = false;
                             autoRecordBtn.disabled = false;
-                            updateStatus('录音完成，可以处理');
+                            updateStatus('录音完成，可以处理', 'success');
                             stopTimer();
                         });
                 }
@@ -371,7 +606,7 @@
             // 处理按钮点击事件
             processBtn.addEventListener('click', function() {
                 if (!recordedBlob) {
-                    updateStatus('没有录音数据', true);
+                    updateStatus('没有录音数据', 'error');
                     return;
                 }
                 
@@ -379,8 +614,11 @@
                 processBtn.disabled = true;
                 recordBtn.disabled = true;
                 autoRecordBtn.disabled = true;
-                processBtn.innerHTML = '<span class="spinner"></span>处理中...';
-                updateStatus('正在处理音频...');
+                processBtn.innerHTML = `
+                    <span class="spinner"></span>
+                    处理中...
+                `;
+                updateStatus('正在处理音频...', 'processing');
                 
                 // 获取选项
                 const options = {
@@ -391,13 +629,16 @@
                 // 发送到服务器处理
                 audioClient.processAudio(recordedBlob, options)
                     .then(result => {
+                        // 显示响应区域
+                        responseSectionEl.style.display = 'block';
+                        
                         // 显示文本回复
                         responseTextEl.textContent = result.text || '没有文本回复';
                         
                         // 如果有音频回复
                         if (result.audio) {
                             // 显示音频控件
-                            audioControlsEl.classList.remove('hidden');
+                            audioControlsEl.style.display = 'block';
                             
                             // 设置音频源（使用更通用的MIME类型）
                             const audioSrc = `data:audio/wav;base64,${result.audio}`;
@@ -407,27 +648,31 @@
                             if (autoPlayCheckbox.checked) {
                                 responseAudioEl.play().catch(e => {
                                     console.error('自动播放失败:', e);
-                                    updateStatus('音频自动播放失败，请手动点击播放', true);
+                                    updateStatus('音频自动播放失败，请手动点击播放', 'error');
                                 });
                             }
                         } else {
                             // 如果没有音频数据，隐藏音频控件并显示提示
-                            audioControlsEl.classList.add('hidden');
-                            updateStatus('处理完成（无音频回复）');
+                            audioControlsEl.style.display = 'none';
                         }
                         
-                        updateStatus('处理完成');
+                        updateStatus('处理完成', 'success');
                     })
                     .catch(error => {
                         console.error('处理失败:', error);
-                        updateStatus(`处理失败: ${error.message}`, true);
+                        updateStatus(`处理失败: ${error.message}`, 'error');
                     })
                     .finally(() => {
                         // 恢复按钮状态
                         processBtn.disabled = false;
                         recordBtn.disabled = false;
                         autoRecordBtn.disabled = false;
-                        processBtn.textContent = '处理录音';
+                        processBtn.innerHTML = `
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            处理录音
+                        `;
                     });
             });
             
@@ -440,6 +685,10 @@
                 recordBtn.disabled = true;
                 processBtn.disabled = true;
                 autoRecordBtn.disabled = true;
+                autoRecordBtn.innerHTML = `
+                    <span class="spinner"></span>
+                    处理中...
+                `;
                 
                 // 获取录音时长
                 const durationSeconds = parseFloat(durationInput.value) || 5;
@@ -452,26 +701,35 @@
                     autoPlay: autoPlayCheckbox.checked,
                     duration: durationMs,
                     onStart: () => {
-                        updateStatus('开始录音（自动模式）...');
-                        autoRecordBtn.classList.add('active');
+                        updateStatus('开始录音（自动模式）...', 'processing');
+                        autoRecordBtn.innerHTML = `
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                                <rect x="6" y="4" width="4" height="16"></rect>
+                                <rect x="14" y="4" width="4" height="16"></rect>
+                            </svg>
+                            录音中...
+                        `;
                         startTimer();
                     },
                     onStop: () => {
-                        updateStatus('录音完成，正在处理...');
-                        autoRecordBtn.classList.remove('active');
+                        updateStatus('录音完成，正在处理...', 'processing');
+                        autoRecordBtn.innerHTML = `
+                            <span class="spinner"></span>
+                            处理中...
+                        `;
                         stopTimer();
                     },
-                    onProcessing: () => {
-                        updateStatus('正在处理音频...');
-                    },
                     onResult: (result) => {
+                        // 显示响应区域
+                        responseSectionEl.style.display = 'block';
+                        
                         // 显示文本回复
                         responseTextEl.textContent = result.text || '没有文本回复';
                         
                         // 如果有音频回复
                         if (result.audio) {
                             // 显示音频控件
-                            audioControlsEl.classList.remove('hidden');
+                            audioControlsEl.style.display = 'block';
                             
                             // 设置音频源（使用更通用的MIME类型）
                             const audioSrc = `data:audio/wav;base64,${result.audio}`;
@@ -481,16 +739,15 @@
                             if (autoPlayCheckbox.checked) {
                                 responseAudioEl.play().catch(e => {
                                     console.error('自动播放失败:', e);
-                                    updateStatus('音频自动播放失败，请手动点击播放', true);
+                                    updateStatus('音频自动播放失败，请手动点击播放', 'error');
                                 });
                             }
                         } else {
                             // 如果没有音频数据，隐藏音频控件并显示提示
-                            audioControlsEl.classList.add('hidden');
-                            updateStatus('处理完成（无音频回复）');
+                            audioControlsEl.style.display = 'none';
                         }
                         
-                        updateStatus('处理完成');
+                        updateStatus('处理完成', 'success');
                     }
                 };
                 
@@ -498,14 +755,20 @@
                 audioClient.recordAndProcess(options)
                     .catch(error => {
                         console.error('操作失败:', error);
-                        updateStatus(`操作失败: ${error.message}`, true);
+                        updateStatus(`操作失败: ${error.message}`, 'error');
                     })
                     .finally(() => {
                         // 恢复按钮状态
                         recordBtn.disabled = false;
                         processBtn.disabled = false;
                         autoRecordBtn.disabled = false;
-                        autoRecordBtn.classList.remove('active');
+                        autoRecordBtn.innerHTML = `
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                            </svg>
+                            一键录音并处理
+                        `;
                     });
             });
             
@@ -519,5 +782,6 @@
             });
         });
     </script>
+
 </body>
 </html>

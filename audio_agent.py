@@ -1,6 +1,7 @@
 import os
 import base64
 import struct
+import time
 from agno.agent import Agent
 from openai import OpenAI
 from typing import Dict, Any
@@ -68,102 +69,121 @@ class AudioProcessingAgent(Agent):
     
     def process_audio(self, audio_data: bytes, text_prompt: str = "这段音频在说什么") -> Dict[str, Any]:
         """处理音频并调用模型获取回复"""
-        # 将音频数据编码为base64
-        base64_audio = base64.b64encode(audio_data).decode("utf-8")
-        
-        print(f"发送请求到模型，音频大小: {len(audio_data)} 字节")
-        
-        # 调用模型
-        completion = self.client.chat.completions.create(
-            model="qwen-omni-turbo",
-            messages=[
-                {
-                    "role": "system",
-                    "content": [{"type": "text", "text": "You are a helpful assistant."}],
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_audio",
-                            "input_audio": {
-                                "data": f"data:;base64,{base64_audio}",
-                                "format": "webm",
-                            },
-                        },
-                        {"type": "text", "text": text_prompt},
-                    ],
-                },
-            ],
-            modalities=["text", "audio"],
-            audio={"voice": "Cherry", "format": "wav"},
-            stream=True,
-            stream_options={"include_usage": True},
-        )
-        
-        # 处理响应
-        response = {"text": "", "audio": None, "usage": None}
-        audio_chunks = []  # 存储原始音频数据块
-        transcript_text = ""
-        
+        start_time = time.time()
         try:
-            for chunk in completion:
-                if chunk.choices:
-                    if hasattr(chunk.choices[0].delta, "audio"):
-                        try:
-                            # 获取音频数据
-                            audio_data = chunk.choices[0].delta.audio.get("data")
-                            if audio_data:
-                                # 解码并保存原始音频数据
-                                try:
-                                    audio_chunk = base64.b64decode(audio_data)
-                                    audio_chunks.append(audio_chunk)
-                                    print(f"收到音频数据块，大小: {len(audio_chunk)} 字节")
-                                except Exception as e:
-                                    print(f"解码音频数据块时出错: {e}")
-                            
-                            # 获取转录文本
-                            transcript = chunk.choices[0].delta.audio.get("transcript")
-                            if transcript:
-                                transcript_text += transcript
-                                print(f"收到转录文本: {transcript}")
-                        except Exception as e:
-                            print(f"处理音频数据时出错: {e}")
-                    elif hasattr(chunk.choices[0].delta, "content"):
-                        content = chunk.choices[0].delta.content
-                        if content:
-                            response["text"] += str(content)
-                            print(f"收到文本内容: {content}")
-                elif hasattr(chunk, "usage"):
-                    response["usage"] = chunk.usage
-                    print(f"收到用量统计: {chunk.usage}")
-                    break  # 收到用量统计后结束循环
-        except Exception as e:
-            print(f"处理响应时出错: {e}")
-            raise
-
-        # 处理音频数据
-        if audio_chunks:
+            # 将音频数据编码为base64
+            encode_start = time.time()
+            base64_audio = base64.b64encode(audio_data).decode("utf-8")
+            encode_time = time.time() - encode_start
+            print(f"音频编码耗时: {encode_time:.2f}秒")
+            
+            print(f"发送请求到模型，音频大小: {len(audio_data)} 字节")
+            
+            # 调用模型
+            model_start = time.time()
+            completion = self.client.chat.completions.create(
+                model="qwen-omni-turbo",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": [{"type": "text", "text": "You are a helpful assistant."}],
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_audio",
+                                "input_audio": {
+                                    "data": f"data:;base64,{base64_audio}",
+                                    "format": "webm",
+                                },
+                            },
+                            {"type": "text", "text": text_prompt},
+                        ],
+                    },
+                ],
+                modalities=["text", "audio"],
+                audio={"voice": "Cherry", "format": "wav"},
+                stream=True,
+                stream_options={"include_usage": True},
+            )
+            
+            # 处理响应
+            response = {"text": "", "audio": None, "usage": None}
+            audio_chunks = []  # 存储原始音频数据块
+            transcript_text = ""
+            
             try:
-                # 合并所有音频数据块
-                raw_audio = b"".join(audio_chunks)
-                # 添加WAV头
-                wav_audio = add_wav_header(raw_audio)
-                # 编码为base64
-                response["audio"] = base64.b64encode(wav_audio).decode('utf-8')
-                print(f"最终音频数据大小: {len(wav_audio)} 字节")
+                for chunk in completion:
+                    if chunk.choices:
+                        if hasattr(chunk.choices[0].delta, "audio"):
+                            try:
+                                # 获取音频数据
+                                audio_data = chunk.choices[0].delta.audio.get("data")
+                                if audio_data:
+                                    # 解码并保存原始音频数据
+                                    try:
+                                        audio_chunk = base64.b64decode(audio_data)
+                                        audio_chunks.append(audio_chunk)
+                                        print(f"收到音频数据块，大小: {len(audio_chunk)} 字节")
+                                    except Exception as e:
+                                        print(f"解码音频数据块时出错: {e}")
+                                
+                                # 获取转录文本
+                                transcript = chunk.choices[0].delta.audio.get("transcript")
+                                if transcript:
+                                    transcript_text += transcript
+                                    print(f"收到转录文本: {transcript}")
+                            except Exception as e:
+                                print(f"处理音频数据时出错: {e}")
+                        elif hasattr(chunk.choices[0].delta, "content"):
+                            content = chunk.choices[0].delta.content
+                            if content:
+                                response["text"] += str(content)
+                                print(f"收到文本内容: {content}")
+                    elif hasattr(chunk, "usage"):
+                        response["usage"] = chunk.usage
+                        print(f"收到用量统计: {chunk.usage}")
+                        break  # 收到用量统计后结束循环
             except Exception as e:
-                print(f"处理最终音频数据时出错: {e}")
-        else:
-            print("没有收集到任何音频数据")
-        
-        # 如果有转录文本但没有其他文本内容，使用转录文本
-        if not response["text"] and transcript_text:
-            response["text"] = transcript_text
-            print(f"使用转录文本作为响应: {transcript_text}")
-        
-        print(f"最终文本响应: {response['text']}")
-        return response
+                print(f"处理响应时出错: {e}")
+                raise
+            
+            model_time = time.time() - model_start
+            print(f"模型处理耗时: {model_time:.2f}秒")
+
+            # 处理音频数据
+            if audio_chunks:
+                try:
+                    # 合并所有音频数据块
+                    audio_process_start = time.time()
+                    raw_audio = b"".join(audio_chunks)
+                    # 添加WAV头
+                    wav_audio = add_wav_header(raw_audio)
+                    # 编码为base64
+                    response["audio"] = base64.b64encode(wav_audio).decode('utf-8')
+                    audio_process_time = time.time() - audio_process_start
+                    print(f"音频后处理耗时: {audio_process_time:.2f}秒")
+                    print(f"最终音频数据大小: {len(wav_audio)} 字节")
+                except Exception as e:
+                    print(f"处理最终音频数据时出错: {e}")
+            else:
+                print("没有收集到任何音频数据")
+            
+            # 如果有转录文本但没有其他文本内容，使用转录文本
+            if not response["text"] and transcript_text:
+                response["text"] = transcript_text
+                print(f"使用转录文本作为响应: {transcript_text}")
+            
+            total_time = time.time() - start_time
+            print(f"总处理时间: {total_time:.2f}秒")
+            print(f"最终文本响应: {response['text']}")
+            
+            return response
+            
+        except Exception as e:
+            print(f"处理音频时出错: {e}")
+            raise
 
 # 实例化Agent
 audio_agent = AudioProcessingAgent()
